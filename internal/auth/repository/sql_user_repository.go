@@ -54,7 +54,7 @@ func (r *SQLUserRepository) FindUserByIdentifier(identifier string) (*model.User
 	var user model.User
 	var roleName string
 	query := `SELECT 
-				u.id, u.username, u.email, u.password_hash, u.role_id, u.is_active, u.created_at, u.updated_at
+				u.id, u.username, u.email, u.password_hash, u.role_id, u.is_active, u.created_at, u.updated_at, r.name AS role_name
               FROM users u
               JOIN roles r ON u.role_id = r.id
               WHERE u.username = $1 OR u.email = $1`
@@ -69,6 +69,7 @@ func (r *SQLUserRepository) FindUserByIdentifier(identifier string) (*model.User
 		&user.IsActive,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&roleName,
 	)
 
 	if err == sql.ErrNoRows {
@@ -80,4 +81,16 @@ func (r *SQLUserRepository) FindUserByIdentifier(identifier string) (*model.User
 	}
 
 	return &user, roleName, nil
+}
+func (r *SQLUserRepository) GetRoleIDByName(roleName string) (int, error) {
+	var roleID int
+	err := r.db.QueryRow("SELECT id FROM roles WHERE name = $1", roleName).Scan(&roleID)
+
+	if err == sql.ErrNoRows {
+		return 0, errors.New("role not found: " + roleName)
+	}
+	if err != nil {
+		return 0, err
+	}
+	return roleID, nil
 }
