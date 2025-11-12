@@ -4,6 +4,7 @@ import "time"
 
 type User struct {
 	ID           int       `db:"id"`
+	UserName     string    `db:"username"`
 	Email        string    `db:"email"`
 	PasswordHash string    `db:"password_hash"`
 	RoleID       int       `db:"role_id"`
