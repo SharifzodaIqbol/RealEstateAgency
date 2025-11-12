@@ -27,6 +27,16 @@ func respondWithJSON(w http.ResponseWriter, status int, payload interface{}) {
 
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var req RegisterRequest
+
+	err := h.authService.RegisterUser(req.Username, req.Email, req.Password)
+	if err != nil {
+		respondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondWithJSON(w, http.StatusBadRequest, map[string]string{"error": "Неверное тело запроса"})
+		return
+	}
 	if req.Username == "" {
 		respondWithJSON(w, http.StatusBadRequest, map[string]string{"error": "Требуется имя пользователя"})
 		return
@@ -39,17 +49,6 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		respondWithJSON(w, http.StatusBadRequest, map[string]string{"error": "Пароль должен быть длиной не менее 6 символов."})
 		return
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		respondWithJSON(w, http.StatusBadRequest, map[string]string{"error": "Неверное тело запроса"})
-		return
-	}
-
-	err := h.authService.RegisterUser(req.Username, req.Email, req.Password)
-	if err != nil {
-		respondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
-		return
-	}
-
 	respondWithJSON(w, http.StatusCreated, map[string]string{"message": "Пользователь успешно зарегистрирован"})
 }
 
