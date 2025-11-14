@@ -27,7 +27,7 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("Не удалось загрузить файл .env. Используются системные переменные окружения.")
 	}
-	jwtSecret := os.Getenv("jwtSecret")
+	jwtSecret := os.Getenv("JWT_SECRET")
 	dbConnString := fmt.Sprintf("user=postgres password=%s dbname=auth sslmode=disable", os.Getenv("mypass"))
 
 	db, err := sqlx.Connect("postgres", dbConnString)
