@@ -4,6 +4,7 @@ import (
 	"auth-service/internal/auth/model"
 	"auth-service/internal/auth/repository"
 	"errors"
+	"fmt"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -25,9 +26,10 @@ func NewAuthService(userRepo repository.UserRepository, tokenService TokenServic
 }
 
 func (s *authService) RegisterUser(username, email, password string) error {
-	defaultRoleID, err := s.userRepo.FindRoleByName("user")
+	const defaultRole = "user"
+	roleID, err := s.userRepo.GetRoleIDByName(defaultRole)
 	if err != nil {
-		return errors.New("default role not found")
+		return fmt.Errorf("could not get default role ID: %w", err)
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -37,7 +39,7 @@ func (s *authService) RegisterUser(username, email, password string) error {
 		UserName:     username,
 		Email:        email,
 		PasswordHash: string(hashedPassword),
-		RoleID:       defaultRoleID,
+		RoleID:       roleID,
 		IsActive:     true,
 	}
 	return s.userRepo.CreateUser(newUser)
